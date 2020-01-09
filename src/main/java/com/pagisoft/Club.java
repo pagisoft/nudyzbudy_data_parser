@@ -3,18 +3,19 @@ package com.pagisoft;
 public class Club {
     private String address;
     private String email;
-    private String latitude;
-    private String longitude;
     private String name;
     private String phone;
     private String city;
     private String category;
+    private String placeId;
+    private String website;
+    private String politicalArea;
+
+    public Club() {}
 
     public Club(String name, String address, String email, String latitude, String longitude, String phone, String city, String category) {
         this.address = address;
         this.email = email;
-        this.latitude = latitude;
-        this.longitude = longitude;
         this.name = name;
         this.phone = phone;
         this.city = city;
@@ -30,27 +31,11 @@ public class Club {
     }
 
     public String getEmail() {
-        return email;
+        return "Brak adresu e-mail";
     }
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(String latitude) {
-        this.latitude = latitude;
-    }
-
-    public String getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(String longitude) {
-        this.longitude = longitude;
     }
 
     public String getName() {
@@ -84,6 +69,31 @@ public class Club {
     public void setCategory(String category) {
         this.category = category;
     }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public String getPoliticalArea() {
+        return politicalArea;
+    }
+
+    public void setPoliticalArea(String politicalArea) {
+        this.politicalArea = politicalArea;
+    }
+
 
 
 }
