@@ -9,9 +9,9 @@ import com.google.maps.model.PlacesSearchResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import static com.google.maps.PlaceDetailsRequest.FieldMask.*;
 
 public class GoogleMapsReader {
 
@@ -19,7 +19,7 @@ public class GoogleMapsReader {
 
     //private static final Logger LOGGER = LogManager.getLogger(GoogleMapsReader.class);
 
-    public List<Club> getClubListByQuery(GoogleMapsQueryBuilder queryBuilder) throws InterruptedException, ApiException, IOException {
+    public List<Club> getClubListByQuery(GoogleMapsQueryBuilder queryBuilder, List<Club> clubsCollectionAll) throws InterruptedException, ApiException, IOException {
 
         List<Club> clubList = new ArrayList<Club>();
 
@@ -65,7 +65,7 @@ public class GoogleMapsReader {
         //System.exit(0);
 
         if (resultsArray == null || resultsArray.size() == 0) {
-            System.out.println("Pusta kolekcja.");
+            //System.out.println("Pusta kolekcja.");
             return clubList;
         }
 
@@ -79,23 +79,27 @@ public class GoogleMapsReader {
             club.setCategory(queryBuilder.getCategory());
             club.setCity(queryBuilder.getCity());
 
-            club = getPlaceDetails(context, club);
+            if (!checkForDuplicateClub(clubsCollectionAll, club.getPlaceId())) {
+                club = getPlaceDetails(context, club);
 
 
-            if (club.getPhone() != null) {
-                if (club.getCity().equals(club.getPoliticalArea())) {
-                    clubList.add(club);
+                if (club.getPhone() != null) {
+                    if (club.getCity().equals(club.getPoliticalArea())) {
+                        clubList.add(club);
+                    }
                 }
             }
+
+
         }
 
         if (results.nextPageToken != null) {
-            System.out.println(results.nextPageToken);
+            //System.out.println(results.nextPageToken);
             queryBuilder.setNextPageToken(results.nextPageToken);
-            clubList.addAll(getClubListByQuery(queryBuilder));
+            clubList.addAll(getClubListByQuery(queryBuilder, clubsCollectionAll));
             //return getClubListByQuery(queryBuilder);
         } else {
-            System.out.println("Brak tokena.");
+            //System.out.println("Brak tokena.");
         }
 
         return clubList;
@@ -106,13 +110,14 @@ public class GoogleMapsReader {
         PlaceDetails details = PlacesApi.placeDetails(
                 context,
                 club.getPlaceId()
-        ).await();
+        ).fields(ADDRESS_COMPONENT, INTERNATIONAL_PHONE_NUMBER, WEBSITE).await();
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonObject jsonObject = new Gson().fromJson(gson.toJson(details), JsonObject.class);
 
 
         //System.out.println(gson.toJson(details));
+        //System.exit(0);
 
         if (jsonObject.get("internationalPhoneNumber") != null) {
             club.setPhone(jsonObject.get("internationalPhoneNumber").toString().replace("\"", ""));
@@ -131,15 +136,23 @@ public class GoogleMapsReader {
             for (int j = 0; j < singleResultTypes.size(); j++) {
                 String singleType = singleResultTypes.get(j).getAsString();
                 if (singleType.equals("LOCALITY")) {
-                    System.out.println(singleResult.get("longName").getAsString());
+                    //System.out.println(singleResult.get("longName").getAsString());
                     club.setPoliticalArea(singleResult.get("longName").getAsString());
                     break;
                 }
             }
         }
 
-
         return club;
+    }
+
+    private static boolean checkForDuplicateClub(List<Club> clubsCollection, String placeId) {
+
+        boolean checkIfExisis = clubsCollection.stream().filter(
+                o -> o.getPlaceId().equals(placeId)
+        ).findFirst().isPresent();
+        return checkIfExisis;
+
     }
 
 }
